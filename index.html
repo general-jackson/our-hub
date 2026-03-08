@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Hub</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .font-serif {
+            font-family: 'Dancing Script', cursive !important;
+        }
+        .animate-spin-slow {
+            animation: spin 8s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-white text-gray-900 overflow-x-hidden">
+
+    <!-- Audio Elements -->
+    <audio id="bgMusic" loop></audio>
+    <audio id="storyAudio"></audio>
+
+    <!-- PIN Overlay -->
+    <div id="pinOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-rose-50 px-6">
+        <div class="w-full max-w-sm text-center">
+            <div id="pinCard" class="bg-white p-8 rounded-3xl shadow-xl border border-rose-100">
+                <i data-lucide="heart" class="w-12 h-12 text-rose-400 mx-auto mb-4 fill-rose-400"></i>
+                <h2 class="text-2xl font-serif text-gray-800 mb-6">Our Secret Space</h2>
+                <div class="space-y-4">
+                    <input type="password" id="pinInput" placeholder="Enter PIN" 
+                        class="w-full px-4 py-3 text-center text-2xl tracking-widest border-2 border-rose-100 rounded-xl focus:outline-none focus:border-rose-300 transition-colors">
+                    <button onclick="checkPin()" class="w-full py-3 bg-rose-400 text-white rounded-xl font-medium hover:bg-rose-500 transition-colors">
+                        Enter
+                    </button>
+                    <p id="pinError" class="text-rose-500 text-sm hidden">Incorrect PIN, try again ❤️</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Content -->
+    <div id="appContent" class="hidden min-h-screen pb-24">
+        
+        <!-- Music Toggle -->
+        <div class="fixed bottom-24 right-6 z-50 md:top-6 md:bottom-auto">
+            <button id="musicToggle" class="p-4 rounded-full shadow-2xl bg-white text-rose-400 border-2 border-rose-100 transition-all">
+                <i data-lucide="music" id="musicIcon"></i>
+            </button>
+        </div>
+
+        <div id="heartContainer" class="fixed inset-0 pointer-events-none -z-10 overflow-hidden"></div>
+
+        <!-- Pages -->
+        <main id="pageContainer" class="max-w-4xl mx-auto px-6">
+            <!-- Home Page -->
+            <div id="page-home" class="page-content">
+                <section class="min-h-screen flex flex-col items-center justify-center text-center">
+                    <div class="relative mb-8">
+                        <div class="absolute -inset-8 bg-rose-200 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                        <i data-lucide="heart" class="w-20 h-20 text-rose-400 fill-rose-400 relative z-10 mx-auto"></i>
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-serif text-rose-400 mb-4">Hey Beautiful,</h1>
+                    <p class="text-xl text-gray-500 mb-8 max-w-lg mx-auto italic">
+                        I built this little corner of the internet just to remind you how much you mean to me.
+                    </p>
+                    
+                    <!-- Days Known Counter -->
+                    <div class="text-center mb-4 text-gray-400 uppercase tracking-widest text-xs font-bold">Days we have known each other</div>
+                    <div class="grid grid-cols-4 gap-3 w-full max-w-sm mx-auto mb-10" id="countdown">
+                        <div class="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-rose-50">
+                            <div id="days" class="text-xl font-bold text-rose-500">0</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-400">Days</div>
+                        </div>
+                        <div class="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-rose-50">
+                            <div id="hours" class="text-xl font-bold text-rose-500">0</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-400">Hrs</div>
+                        </div>
+                        <div class="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-rose-50">
+                            <div id="mins" class="text-xl font-bold text-rose-500">0</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-400">Mins</div>
+                        </div>
+                        <div class="bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-sm border border-rose-50">
+                            <div id="secs" class="text-xl font-bold text-rose-500">0</div>
+                            <div class="text-[10px] uppercase tracking-wider text-gray-400">Secs</div>
+                        </div>
+                    </div>
+                    <button onclick="scrollToLetter()" class="bg-rose-400 text-white px-8 py-4 rounded-full shadow-lg flex items-center mx-auto space-x-2 active:scale-95 transition-transform">
+                        <span>Open Your Letter</span>
+                        <i data-lucide="heart" class="w-4 h-4 fill-white"></i>
+                    </button>
+                </section>
+
+                <section id="letterSection" class="py-20 space-y-20">
+                    <div class="bg-white p-8 md:p-16 rounded-[2.5rem] shadow-xl border-t-4 border-rose-300">
+                        <h2 class="text-3xl font-serif text-rose-400 mb-8 text-center">To My Everything...</h2>
+                        <div class="space-y-6 text-lg text-gray-700 leading-relaxed font-light italic text-center">
+                            <p>I was sitting here thinking about us and I realized that words sometimes aren't enough to capture how lucky I feel.</p>
+                            <p>This website is a small token of my appreciation for the happiness you bring into my life every single day.</p>
+                            <p class="font-bold text-rose-400 text-2xl py-6 not-italic">"In all the world, there is no heart for me like yours."</p>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button onclick="toggleHug()" class="bg-white text-rose-400 border-2 border-rose-400 px-8 py-3 rounded-full font-bold">
+                            Click for a virtual hug
+                        </button>
+                        <div id="hugMessage" class="hidden mt-8 p-8 bg-white rounded-3xl shadow-xl border border-rose-100 fade-in">
+                            <p class="text-3xl font-bold text-rose-500 mb-2">Huuuuuuuug! 🫂❤️</p>
+                            <p class="text-gray-500">Consider yourself squeezed tightly.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Timeline Page -->
+            <div id="page-timeline" class="page-content hidden py-24 px-6">
+                <h2 class="text-3xl font-serif text-gray-800 mb-12 text-center">Our Journey</h2>
+                <div id="timelineList" class="space-y-16"></div>
+            </div>
+
+            <!-- Gallery Page -->
+            <div id="page-gallery" class="page-content hidden py-24 px-6">
+                <h2 class="text-3xl font-serif text-gray-800 mb-8 text-center">Beautiful Moments</h2>
+                <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+            </div>
+
+            <!-- Stories Page -->
+            <div id="page-stories" class="page-content hidden min-h-screen flex items-center justify-center">
+                <div class="w-full max-w-md bg-[#1a1c2c] rounded-[3rem] p-12 text-center shadow-2xl">
+                    <i data-lucide="book-open" class="w-16 h-16 text-rose-400 mx-auto mb-6"></i>
+                    <h2 class="text-white text-3xl font-serif mb-4">Our Story</h2>
+                    <button id="storyBtn" class="w-24 h-24 rounded-full flex items-center justify-center text-white mx-auto shadow-xl bg-rose-500 active:scale-90 transition-all">
+                        <i data-lucide="play" id="storyIcon" class="w-10 h-10 ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notes Page -->
+            <div id="page-notes" class="page-content hidden py-24 px-6 space-y-6">
+                <h2 class="text-3xl font-serif text-gray-800 mb-8 text-center">Love Notes</h2>
+                <div id="notesList" class="space-y-6 max-w-md mx-auto"></div>
+            </div>
+        </main>
+
+        <!-- Navbar -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-rose-100 px-2 py-3 z-40">
+            <div class="max-w-screen-md mx-auto flex justify-around items-center">
+                <button onclick="switchTab('home')" class="nav-btn text-rose-500 flex flex-col items-center" id="nav-home">
+                    <i data-lucide="heart"></i><span class="text-[10px] mt-1 font-semibold">Home</span>
+                </button>
+                <button onclick="switchTab('timeline')" class="nav-btn text-gray-400 flex flex-col items-center" id="nav-timeline">
+                    <i data-lucide="calendar"></i><span class="text-[10px] mt-1 font-semibold">Journey</span>
+                </button>
+                <button onclick="switchTab('gallery')" class="nav-btn text-gray-400 flex flex-col items-center" id="nav-gallery">
+                    <i data-lucide="image"></i><span class="text-[10px] mt-1 font-semibold">Moments</span>
+                </button>
+                <button onclick="switchTab('stories')" class="nav-btn text-gray-400 flex flex-col items-center" id="nav-stories">
+                    <i data-lucide="book-open"></i><span class="text-[10px] mt-1 font-semibold">Stories</span>
+                </button>
+                <button onclick="switchTab('notes')" class="nav-btn text-gray-400 flex flex-col items-center" id="nav-notes">
+                    <i data-lucide="sticky-note"></i><span class="text-[10px] mt-1 font-semibold">Notes</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        const PIN_CODE = "1234";
+        const START_DATE = new Date('2025-07-17T00:00:00');
+        
+        const getAssetPath = (fileName) => {
+            const isGithub = window.location.hostname.includes('github.io');
+            const prefix = isGithub ? '/our-hub' : '';
+            return `${prefix}/${fileName.startsWith('/') ? fileName.substring(1) : fileName}`;
+        };
+
+        const timelineData = [
+            { date: "July 17, 2025", title: "The Beginning", desc: "Where it all started at Dronalaya. I hoped I would meet a great marwadi girl, and God provided ;)", img: "https://i.postimg.cc/Y957d9X0/IMG_4459.png" },
+            { date: "July 20, 2025", title: "Love at First Bite", desc: "When you bit me, our spark truly began.", img: "https://i.postimg.cc/xCJYGH3X/IMG_4457.jpg" },
+            { date: "Nov 5, 2025", title: "Making it Official", desc: "I finally realized the thought of you as my girlfriend could not stay in my head.", img: "https://i.postimg.cc/8cLS9S3F/IMG_4460.png" },
+            { date: "Dec 5, 2025", title: "One Month", desc: "30 days of endless smiles and happiness.", img: "https://i.postimg.cc/SxH7gb6J/IMG_0674.png" },
+            { date: "Jan 5, 2026", title: "Two Months", desc: "New Year, same beautiful soul by my side.", img: "https://i.postimg.cc/Hxg0C0vf/IMG_2300.png" },
+            { date: "Feb 5, 2026", title: "Three Months", desc: "Still falling for you every single day.", img: "https://i.postimg.cc/k58NZYsv/IMG_3493.png" },
+            { date: "Feb 14, 2026", title: "Valentine's Day", desc: "Could not fit all our amazing photos, but you really loved the handmade letter that I mailed.", img: "https://i.postimg.cc/mkRJ5HG6/IMG_3681.png" },
+            { date: "Mar 5, 2026", title: "Four Months", desc: "Spring is here, and my love for you keeps blooming.", img: "https://i.postimg.cc/8CWd3X4W/IMG_4405.png" }
+        ];
+
+        const galleryImages = [
+            "https://i.postimg.cc/Y957d9X0/IMG_4459.png", "https://i.postimg.cc/xCJYGH3X/IMG_4457.jpg",
+            "https://i.postimg.cc/8cLS9S3F/IMG_4460.png", "https://i.postimg.cc/SxH7gb6J/IMG_0674.png",
+            "https://i.postimg.cc/Hxg0C0vf/IMG_2300.png", "https://i.postimg.cc/k58NZYsv/IMG_3493.png",
+            "https://i.postimg.cc/mkRJ5HG6/IMG_3681.png", "https://i.postimg.cc/8CWd3X4W/IMG_4405.png"
+        ];
+
+        const notes = [
+            { text: "You are my favorite notification.", color: "bg-yellow-50", rotate: "rotate-1" },
+            { text: "Thank you for being you.", color: "bg-rose-50", rotate: "-rotate-1" },
+            { text: "Every song reminds me of us.", color: "bg-blue-50", rotate: "rotate-2" },
+            { text: "Glad we met at Dronalaya.", color: "bg-green-50", rotate: "-rotate-2" }
+        ];
+
+        function checkPin() {
+            const input = document.getElementById('pinInput').value;
+            if (input === PIN_CODE) {
+                document.getElementById('pinOverlay').style.display = 'none';
+                document.getElementById('appContent').classList.remove('hidden');
+                initApp();
+            } else {
+                const card = document.getElementById('pinCard');
+                card.classList.add('animate-shake');
+                document.getElementById('pinError').classList.remove('hidden');
+                setTimeout(() => card.classList.remove('animate-shake'), 400);
+            }
+        }
+
+        function initApp() {
+            lucide.createIcons();
+            setupAudio();
+            setupCountdown();
+            populateTimeline();
+            populateGallery();
+            populateNotes();
+            createFloatingHearts();
+        }
+
+        function setupAudio() {
+            const bgMusic = document.getElementById('bgMusic');
+            const storyAudio = document.getElementById('storyAudio');
+            const musicToggle = document.getElementById('musicToggle');
+            const musicIcon = document.getElementById('musicIcon');
+            const storyBtn = document.getElementById('storyBtn');
+
+            bgMusic.src = getAssetPath('music.mp3');
+            storyAudio.src = getAssetPath('story.mp3');
+
+            musicToggle.onclick = () => {
+                if (bgMusic.paused) {
+                    bgMusic.play();
+                    musicToggle.classList.add('bg-rose-500', 'text-white');
+                    musicIcon.classList.add('animate-spin-slow');
+                } else {
+                    bgMusic.pause();
+                    musicToggle.classList.remove('bg-rose-500', 'text-white');
+                    musicIcon.classList.remove('animate-spin-slow');
+                }
+            };
+
+            storyBtn.onclick = () => {
+                if (storyAudio.paused) {
+                    bgMusic.pause();
+                    storyAudio.play();
+                    storyBtn.innerHTML = '<i data-lucide="pause"></i>';
+                    storyBtn.classList.add('animate-pulse');
+                    lucide.createIcons();
+                } else {
+                    storyAudio.pause();
+                    storyBtn.innerHTML = '<i data-lucide="play" class="ml-1"></i>';
+                    storyBtn.classList.remove('animate-pulse');
+                    lucide.createIcons();
+                }
+            };
+        }
+
+        function setupCountdown() {
+            const update = () => {
+                const now = new Date();
+                const diff = now - START_DATE;
+                document.getElementById('days').innerText = Math.floor(diff / (1000 * 60 * 60 * 24));
+                document.getElementById('hours').innerText = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                document.getElementById('mins').innerText = Math.floor((diff / 1000 / 60) % 60);
+                document.getElementById('secs').innerText = Math.floor((diff / 1000) % 60);
+            };
+            update();
+            setInterval(update, 1000);
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`page-${tabId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.replace('text-rose-500', 'text-gray-400'));
+            document.getElementById(`nav-${tabId}`).classList.replace('text-gray-400', 'text-rose-500');
+            window.scrollTo(0,0);
+        }
+
+        function populateTimeline() {
+            const list = document.getElementById('timelineList');
+            list.innerHTML = timelineData.map(item => `
+                <div class="flex flex-col md:flex-row gap-8 items-center fade-in">
+                    <div class="md:w-1/2 rounded-3xl overflow-hidden shadow-xl">
+                        <img src="${item.img}" class="w-full h-64 object-cover">
+                    </div>
+                    <div class="md:w-1/2 text-center md:text-left">
+                        <span class="text-rose-400 font-bold uppercase text-[10px] tracking-widest">${item.date}</span>
+                        <h3 class="text-2xl font-serif text-gray-800 mt-2">${item.title}</h3>
+                        <p class="text-gray-500 mt-4 leading-relaxed">${item.desc}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateGallery() {
+            document.getElementById('galleryGrid').innerHTML = galleryImages.map(src => `
+                <div class="aspect-square rounded-2xl overflow-hidden shadow-md hover:scale-105 transition-transform">
+                    <img src="${src}" class="w-full h-full object-cover">
+                </div>
+            `).join('');
+        }
+
+        function populateNotes() {
+            document.getElementById('notesList').innerHTML = notes.map(note => `
+                <div class="p-8 ${note.color} rounded-3xl shadow-sm border border-black/5 ${note.rotate} fade-in">
+                    <p class="text-xl font-serif text-gray-700 italic">"${note.text}"</p>
+                </div>
+            `).join('');
+        }
+
+        function createFloatingHearts() {
+            const container = document.getElementById('heartContainer');
+            for(let i=0; i<8; i++) {
+                const heart = document.createElement('div');
+                heart.innerHTML = '❤️';
+                heart.className = 'absolute text-rose-200 text-3xl opacity-0';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.top = '110vh';
+                container.appendChild(heart);
+                heart.animate([
+                    { transform: 'translateY(0)', opacity: 0 },
+                    { opacity: 0.4, offset: 0.1 },
+                    { transform: 'translateY(-120vh)', opacity: 0 }
+                ], { duration: 10000 + Math.random()*5000, iterations: Infinity, delay: Math.random()*5000 });
+            }
+        }
+
+        function scrollToLetter() { document.getElementById('letterSection').scrollIntoView({ behavior: 'smooth' }); }
+        function toggleHug() { document.getElementById('hugMessage').classList.toggle('hidden'); }
+    </script>
+</body>
+</html>
